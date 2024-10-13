@@ -16,11 +16,16 @@ export default function Frame({ initialInput }: FrameProps) {
 
   async function fetchSpectulation(input: string) {
     setState("generating speculation");
-    const response = await axios.post("/api/generateSpeculation", {
-      input,
-    });
-    const speculation = await response.data;
-    await fetchLandscape(speculation);
+    try {
+      const response = await axios.post("/api/generateSpeculation", {
+        input,
+      });
+      const speculation = await response.data;
+      await fetchLandscape(speculation);
+    } catch (error) {
+      console.error("Error fetching speculation:", error);
+      window.location.reload();
+    }
   }
 
   async function fetchLandscape(speculation: string) {
@@ -35,6 +40,7 @@ export default function Frame({ initialInput }: FrameProps) {
       setTimeout(() => speakDescription(speculation), 3000);
     } catch (error) {
       console.error("Error fetching landscape:", error);
+      window.location.reload();
     }
   }
 
@@ -92,7 +98,10 @@ export default function Frame({ initialInput }: FrameProps) {
       )}
       {landscapes &&
         landscapes.map((landscape, index) => (
-          <div key={index} className="fixed top-0 left-0 w-full h-screen">
+          <div
+            key={index}
+            className="fixed top-0 left-0 w-full h-screen blur-sm"
+          >
             <figure className="w-full h-full left-[-200%]">
               <img
                 className={`opacity-100 ${

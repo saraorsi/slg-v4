@@ -3,27 +3,38 @@ import Frame from "@/components/Frames";
 import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
-  const input =
-    "Although the modern Western worldview is built on their division, nature and culture are interconnected. Culture is a complex and dynamic process of interaction and co-evolution between humans and other species, as well as technologies and environments. Thus, as seen with climate change, technology and nature are historically interconnected and should be viewed as part of the ecological niche within which the human animal lives.";
+  const inputs = [
+    {
+      exerpt:
+        "The dichotomies between mind and body, animal and human, organism and machine, public and private, nature and culture, men and women, primitive and civilized are all in question ideologically.",
+      reference: "A Cyborg Manifesto",
+      author: "Donna Haraway (1985)",
+    },
+    {
+      exerpt:
+        "The cognisphere takes up where the cyborg left off. No longer bound in a binary with the goddess but rather emblem and instantiation of dynamic cognitive flow between human, animal and machine, the cognisphere, like the world itself, is not binary but multiple, not a split creature but a co-evolving and densely interconnected complex system. ",
+      reference: "Unfinished Work: From Cyborg to Cognisphere",
+      author: "N. Katherine Hayles (2006)",
+    },
+    {
+      exerpt:
+        "But where are we to classify the ozone hole story, or global warming or deforestation? Where are we to put these hybrids? Are they human? Human because they are our work. Are they natural? Natural because they are not our doing. Are they local or global? Both.",
+      reference: "We Have Never Been Modern",
+      author: "Bruno Latour (1991)",
+    },
+  ];
 
   const [start, setStart] = useState(false);
   const [startFrames, setStartFrames] = useState(false);
   const [isFirefox, setIsFirefox] = useState(true);
   const [notificaton, setNotification] = useState(true);
-
-  const audioRef = useRef<HTMLAudioElement>(null);
-
-  const playAudio = () => {
-    setStart(true);
-    setTimeout(() => setStartFrames(true), 3000);
-    if (audioRef.current) {
-      audioRef.current.volume = 0.04;
-      audioRef.current.playbackRate = 0.6;
-      audioRef.current
-        .play()
-        .catch((err) => console.error("Error playing audio:", err));
-    }
-  };
+  const [startCountdown, setStartCountdown] = useState(false);
+  const [countdown, setCountdown] = useState(20);
+  const [input, setInput] = useState({
+    exerpt: "",
+    reference: "",
+    author: "",
+  });
 
   function handleCloseNotification() {
     setNotification(false);
@@ -35,7 +46,35 @@ export default function Home() {
     } else {
       setIsFirefox(false);
     }
+
+    const getRandomInput = () =>
+      inputs[Math.floor(Math.random() * inputs.length)];
+    setInput(getRandomInput());
+    setStartCountdown(true);
+    setTimeout(() => playAudio(), 3000);
   }, []);
+
+  useEffect(() => {
+    if (startCountdown && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0) {
+      setStart(true);
+      setStartFrames(true);
+    }
+  }, [startCountdown, countdown]);
+
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const playAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.04;
+      audioRef.current.playbackRate = 0.6;
+      audioRef.current
+        .play()
+        .catch((err) => console.error("Error playing audio:", err));
+    }
+  };
 
   return (
     <>
@@ -49,31 +88,30 @@ export default function Home() {
           For a better experience use Firefox.
         </div>
       )}
-      {!start && (
+      {!start && input.exerpt != "" && (
         <div className="w-[900px] h-screen flex flex-col items-center justify-center m-auto text-justify-center text-last-center">
-          <div className="text-lg mb-8 uppercase">
-            Symbiotic Landscape Generator
-          </div>
-          <div className="text-lg mb-8">{input}</div>
-          <div className="text-sm mb-4">
-            [excerpt from residency synopsis used as initial input]
+          <div className="text-2xl mb-8 uppercase">SLG-V5</div>
+          <div className="text-sm mb-2">[initial inptut]</div>
+          <div className="text-lg mb-4">{input.exerpt}</div>
+          <div className="text-sm mb-9">
+            {input.reference}
             <br />
-            CADA
+            {input.author}
           </div>
+          <div className="text-sm mb-2"> [sound]</div>
           <div className="text-sm mb-12">
-            [sound]
-            <br />
-            valt​​​Ü​​​ü​​​d by Catarina Arbusto
+            valt​​​Ü​​​ü​​​d by catarina arbusto
           </div>
-          <button
-            onClick={playAudio}
-            className="text-lg flicker bg-transparent py-2 px-8 text-green rounded-3xl border-solid border-2 border-[#00ff00]"
-          >
-            start the performance
-          </button>
+          {startCountdown && countdown > 0 && (
+            <button className="text-lg bg-transparent w-[250px] py-2 px-8 text-green rounded-3xl border-solid border-2 border-[#00ff00]">
+              Starts in {countdown < 10 && 0}
+              {countdown}s
+            </button>
+          )}
         </div>
       )}
-      {startFrames && <Frame initialInput={input} />}
+
+      {startFrames && <Frame initialInput={input.exerpt} />}
       <audio ref={audioRef} style={{ display: "none" }}>
         <source src="./3626487201.mp3" type="audio/mp3" />
         Your browser does not support the audio element.
